@@ -1,6 +1,7 @@
 using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddSingleton<BlobContainerClient>((services) =>
 {
@@ -15,6 +16,7 @@ var app = builder.Build();
 app.MapGet("{*url}", async (string? url, BlobContainerClient container) =>
 {
     string path = url ?? "/";
+    Console.WriteLine($"GET {path}");
     if (path.EndsWith('/'))
     {
         path += "index.html";
