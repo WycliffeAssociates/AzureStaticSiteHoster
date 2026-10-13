@@ -22,7 +22,7 @@ Every `GET` request is mapped straight to a blob in the configured container:
 - Each request is logged to the console as `GET <path>`.
 
 ## Requirements
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - An Azure Storage account, or a local emulator such as [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite)
 - (Optional) Docker, if you want to run it in a container
 
@@ -82,7 +82,7 @@ The image is built from the repository root:
 docker build -f AzureStaticSiteHoster/Dockerfile -t azurestaticsitehoster .
 ```
 
-The .NET 8 base image listens on port **8080** and runs as a non-root user. `UseDevelopmentStorage=true` points at `127.0.0.1`, which inside a container is the container itself, so when using an emulator on your host pass a full connection string pointing at `host.docker.internal`:
+The .NET 10 base image listens on port **8080** and runs as a non-root user. `UseDevelopmentStorage=true` points at `127.0.0.1`, which inside a container is the container itself, so when using an emulator on your host pass a full connection string pointing at `host.docker.internal`:
 
 ```bash
 docker run --rm -p 8080:8080 \
