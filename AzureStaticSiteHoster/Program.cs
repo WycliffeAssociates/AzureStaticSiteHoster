@@ -5,9 +5,11 @@ builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddSingleton<BlobContainerClient>((services) =>
 {
-    var config = services.GetService<IConfiguration>();
-    var connectionStringConfig = config.GetValue<string>("AzureStorageConnectionString");
-    var storageContainerConfig = config.GetValue<string>("AzureStorageContainer");
+    var config = services.GetRequiredService<IConfiguration>();
+    var connectionStringConfig = config.GetValue<string>("AzureStorageConnectionString")
+        ?? throw new InvalidOperationException("AzureStorageConnectionString is not configured");
+    var storageContainerConfig = config.GetValue<string>("AzureStorageContainer")
+        ?? throw new InvalidOperationException("AzureStorageContainer is not configured");
     return new BlobContainerClient(connectionStringConfig, storageContainerConfig);
 });
 
@@ -15,7 +17,7 @@ var app = builder.Build();
 
 app.MapGet("{*url}", async (string? url, BlobContainerClient container) =>
 {
-    string path = url ?? "/";
+    var path = url ?? "/";
     Console.WriteLine($"GET {path}");
     if (path.EndsWith('/'))
     {
@@ -24,11 +26,9 @@ app.MapGet("{*url}", async (string? url, BlobContainerClient container) =>
     var blob = container.GetBlobClient(path);
     if (await blob.ExistsAsync())
     {
-        var stream = new MemoryStream();
-        var propertiesTask = blob.GetPropertiesAsync();
-        await blob.DownloadToAsync(stream);
-        stream.Position = 0;
-        return Results.Stream(stream, contentType: (await propertiesTask).Value.ContentType);
+        var download = await blob.DownloadStreamingAsync();
+        var contentType = download.Value.Details.ContentType ?? "application/octet-stream";
+        return Results.Stream(download.Value.Content, contentType: contentType);
     }
     return Results.NotFound("Not found");
 });
